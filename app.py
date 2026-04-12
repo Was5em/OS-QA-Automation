@@ -9,8 +9,7 @@ import time
 # CONFIGURATION
 # ==========================================
 # حط المفتاح بتاعك هنا (يفضل تستخدم st.secrets أو .env في المشاريع الحقيقية)
-genai.configure(api_key="AIzaSyDjOP3Ps9lsLAeEp5bgexGMAn7AJqn04Ek")
-
+genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
 # إعدادات صفحة الويب
 st.set_page_config(
     page_title="Outsourcing Skill AI QA Automation",
