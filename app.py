@@ -5,12 +5,8 @@ import os
 import tempfile
 import time
 
-# ==========================================
-# CONFIGURATION
-# ==========================================
-# حط المفتاح بتاعك هنا (يفضل تستخدم st.secrets أو .env في المشاريع الحقيقية)
+
 genai.configure(api_key=st.secrets["GEMINI_API_KEY"])
-# إعدادات صفحة الويب
 st.set_page_config(
     page_title="Outsourcing Skill AI QA Automation",
     page_icon="🤖",
@@ -18,19 +14,15 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# تصميم بسيط للـ Header
 st.title("🎧 QA Automation")
 st.markdown("**Powered by Outsourcing Skill - Automated Quality Assurance**")
 st.markdown("---")
 
 def process_audio_file(file_path):
-    """دالة تحليل الصوت باستخدام جيميناي"""
     model = genai.GenerativeModel('gemini-2.5-flash')
     
-    # رفع الملف
     audio_file = genai.upload_file(path=file_path)
     
-    # السطرين دول هم سر الصنعة: بيخلوا الكود يستنى لحد ما جوجل تخلص قراءة الملف
     while audio_file.state.name == "PROCESSING":
         time.sleep(2)
         audio_file = genai.get_file(audio_file.name)
@@ -80,49 +72,36 @@ def process_audio_file(file_path):
     
     return json.loads(response.text.strip())
 
-# ==========================================
-# USER INTERFACE
-# ==========================================
 
 st.sidebar.header("📂 Upload Call Record")
 uploaded_file = st.sidebar.file_uploader("Upload an MP3 or WAV file", type=["mp3", "wav"])
 
 if uploaded_file is not None:
-    # تشغيل الصوت في الواجهة عشان الجمهور يسمعه
     st.sidebar.audio(uploaded_file, format='audio/mp3')
     
     if st.sidebar.button("🚀 Analyze Call Now"):
         with st.spinner('🤖 AI is listening and analyzing the call... Please wait.'):
-            # حفظ الملف المرفوع بشكل مؤقت عشان جيميناي يقدر يقرأه
             with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as temp_audio:
                 temp_audio.write(uploaded_file.read())
                 temp_audio_path = temp_audio.name
 
             try:
-                # تشغيل اللوجيك بتاعك
                 result = process_audio_file(temp_audio_path)
                 
-                # نجاح التحليل
                 st.success("✅ Analysis Complete!")
                 st.markdown("---")
                 
-                # ==========================================
-                # الديزاين الجديد: مربعات تحت بعضها
-                # ==========================================
                 
-                # المربع الأول: التقييم
                 with st.container(border=True):
                     st.subheader("📊 QA Score")
                     score = result.get("Score", "N/A")
                     st.metric(label="Overall Performance", value=f"{score}/100")
                     st.info(f"**Agent Name:** {result.get('Agent_Name', 'N/A')}")
                 
-                st.markdown("<br>", unsafe_allow_html=True) # مسافة صغيرة
+                st.markdown("<br>", unsafe_allow_html=True) 
                 
-                # المربع الثاني: البيانات الطبية
                 with st.container(border=True):
                     st.subheader("🏥 Extracted Medical Data")
-                    # قسمنا البيانات عمودين جوه المربع عشان الشكل يكون متناسق
                     col_a, col_b = st.columns(2)
                     with col_a:
                         st.markdown(f"**Patient Name:** {result.get('Patient_Name', 'N/A')}")
@@ -139,7 +118,6 @@ if uploaded_file is not None:
                 
                 st.markdown("<br>", unsafe_allow_html=True)
                 
-                # المربع الثالث: الفيدباك
                 with st.container(border=True):
                     st.subheader("💡 QA Feedback")
                     st.markdown("### 🌟 Strengths")
@@ -148,7 +126,6 @@ if uploaded_file is not None:
                     st.markdown("### ⚠️ Weaknesses & Compliance")
                     st.error(result.get("Weaknesses", "None listed."))
                         
-                # المربع الرابع: الداتا الأصلية JSON
                 st.markdown("---")
                 st.subheader("📋 Full Extracted Record (JSON)")
                 st.json(result)
@@ -157,13 +134,10 @@ if uploaded_file is not None:
                 st.error(f"❌ An error occurred during analysis: {e}")
             
             finally:
-                # تنظيف الملف المؤقت
                 if os.path.exists(temp_audio_path):
                     os.remove(temp_audio_path)
 else:
-    # رسالة ترحيب قبل رفع أي ملف
     st.info("👈 Please upload an audio file from the sidebar to begin the AI Quality Assurance analysis.")
-    # عملنا 3 عواميد وهنحط الصورة في العمود اللي في النص
     col1, col2, col3 = st.columns([1, 1, 1])
     with col2:
         st.image("logo.png", width=250)
